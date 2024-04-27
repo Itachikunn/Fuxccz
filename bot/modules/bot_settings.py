@@ -48,6 +48,16 @@ async def load_config():
     if len(BOT_TOKEN) == 0:
         BOT_TOKEN = config_dict['BOT_TOKEN']
 
+AUTHORIZED_CHATS = environ.get('AUTHORIZED_CHATS', '')
+if AUTHORIZED_CHATS:
+    aid = AUTHORIZED_CHATS.split()
+    for id_ in aid:
+        chat_id, *topic_ids = id_.split(':')
+        chat_id = int(chat_id)
+        user_data.setdefault(chat_id, {'is_auth': True})
+        if topic_ids:
+            user_data[chat_id].setdefault('topic_ids', []).extend(map(int, topic_ids))
+
     TELEGRAM_API = environ.get('TELEGRAM_API', '')
     if len(TELEGRAM_API) == 0:
         TELEGRAM_API = config_dict['TELEGRAM_API']
@@ -308,6 +318,7 @@ async def load_config():
     config_dict.update({'AS_DOCUMENT': AS_DOCUMENT,
                         'BASE_URL': BASE_URL,
                         'BOT_TOKEN': BOT_TOKEN,
+                        'AUTHORIZED_CHATS': AUTHORIZED_CHATS,
                         'BOT_MAX_TASKS': BOT_MAX_TASKS,
                         'CMD_SUFFIX': CMD_SUFFIX,
                         'DATABASE_URL': DATABASE_URL,
@@ -404,6 +415,7 @@ async def get_buttons(key=None, edit_type=None, edit_mode=None, mess=None):
         buttons.ibutton('Close', "botset close", position="footer")
         if edit_mode and key in ['CMD_SUFFIX',
                                  'OWNER_ID',
+                                 'AUTHORIZED_CHATS',
                                  'USER_SESSION_STRING', 'TELEGRAM_HASH',
                                  'TELEGRAM_API',
                                  'DATABASE_URL',
